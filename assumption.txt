@@ -1,0 +1,23 @@
+有"diffuse" "degrade" "generate" "bind"四種行為
+有"small" "big"兩種形態的popZ塊
+
+"generate" : 每個site在每次"step"都以"constantly"的機率生成新的"單位popZ"	//is constantly make sense??
+
+"step" : 
+
+
+
+"small" :
+	"diffuse" : 可到達細胞內任一點, 每個"step"都幾乎是讓全部的small popZ "randomly"重新散佈在整個細胞	//is the assumption true?
+	"degrade" : 每次"step"每個small popZ以"相同機率"消失，使整體來看，越多small每次消失的越快		//is the assumption true?
+
+"big" :
+	"diffuse" : 不能游離到到"pole area"外, 游離機率為"num"的"函數", 
+	"degrade" : 只有"最外圈"的popZ可能被degrade, 機率為"big.num"的"函數"
+	
+
+"bind" :
+	"碰撞"後結合的機率為兩者的"num"相加的"函數"
+	// "small" vs "small"	: 
+	// "small" vs "big"		: 
+	// "big"   vs "big"		: 
