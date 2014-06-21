@@ -3,7 +3,7 @@ function listObject = DList()
   data = cell(0);
   listObject = struct('display',@display_list,'length',@listlength,'push_front',@add_firstelement,'add_firstelements',@add_firstelements,'push_back',@add_lasttelement,...
                         'add_lasttelements',@add_lasttelements,'add_element',@add_element,'add_elements',@add_elements,'set_element',@set_element,'pop',@delete_element,'pop_front',@delete_first,...
-                        'pop_back',@delete_last,'front',@GET_first,'back',@GET_last,'GET',@GET);
+                        'pop_back',@delete_last,'front',@GET_first,'back',@GET_last,'get',@GET);
 
   function display_list
     %# Displays the data in the list
@@ -84,7 +84,14 @@ function listObject = DList()
 
   function dataout = GET(index)
     %# get element at index here the cell can be transformed to standard arrays
-    dataout = cell2mat(data(index));
+    dataout = data(index);
   end
+  
+    function b = getBlock(index)
+        
+        p = data(index);
+        b = p.getBlock();
+
+    end
 
 end

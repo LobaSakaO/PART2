@@ -1,9 +1,10 @@
-classdef BPopZ < handle
+classdef PopZ < handle
     
     properties
-        B; %distribution block
+        B;  %distribution block
         MG; %margin
-        num;
+        DG; %degradable
+        num;%total number of small popZ (sum(sum(B)))
     end
     
     properties (Constant)
@@ -13,43 +14,54 @@ classdef BPopZ < handle
     
     %--------------------------------------------------------------------%
     methods(Access=public)
-        function obj = BPopZ(b)
+        function obj = PopZ(b)
             if nargin~=0
                 obj.B = b;
-                obj.MG = obj.computeMargin();
-                obj.num = obj.computeNum();
+                obj.updateProperties();
             end
         end
         
         function [] = draw(Z, h)
-            set(h, 'ZDATA', [Z.B Z.B(:, BPopZ.Ylim);Z.B(BPopZ.Xlim, :) 0]');
+            set(h, 'ZDATA', [Z.B Z.B(:, PopZ.Ylim);Z.B(PopZ.Xlim, :) 0]');
             drawnow;
         end
         function [] = drawMargin(Z, h)
-            set(h, 'ZDATA', [Z.MG Z.MG(:, BPopZ.Ylim);Z.MG(BPopZ.Xlim, :) 0]');
+            set(h, 'ZDATA', [Z.MG Z.MG(:, PopZ.Ylim);Z.MG(PopZ.Xlim, :) 0]');
             drawnow;
+        end
+        
+        function b = getBlock(this)
+            b = this.B;
+        end
+        function mg = getMargin(this)
+            mg = this.MG;
+        end
+        function n = getNum(this)
+            n = this.num;
         end
         
         function collided = isCollide(this, collider)
             collided = numel(find(this.MG & collider));
         end
         
-        function [] = degrade(this, degraded)
+        function [] = degrade(this)
+            x = PopZCell.Xlim;
+            y = PopZCell.Ylim;
+            tmp_deg = binornd(1, PopZ.getDegradeProb(this.num), [x, y]);
+            degraded = tmp_deg & this.DG;
             this.B = this.B - degraded;
-            this.MG = this.computeMargin();
-            this.num = this.computeNum();
+            this.updateProperties();
         end
         
         function [] = bind(this, binded)
-            %binded is a matrix that has intersection with MG
-            this.B = this.B + binded;
-            this.MG = this.computeMargin();
-            this.num = this.computeNum();
+            %binded is a PopZ that has intersection with MG
+            this.B = this.B + binded.getBlock();
+            this.updateProperties();
         end
         
         function [] = diffuse(this, vec)
             this.B = circshift(this.B, vec);
-            this.MG = this.computeMargin();
+            this.updateProperties();
         end
         
         
@@ -66,21 +78,36 @@ classdef BPopZ < handle
             
             BBB = right + left + circshift(this.B,[0,1]) + circshift(this.B,[0,-1]);
             
-            M = ( (BBB.*(this.B==0))~=0 );
+            M = BBB & (this.B==0);
         end
-        
         function n = computeNum(this)
             n = numel(find(this.B~=0));
+        end
+        function d = computeDegradable(this)
+            %must compute margin first!!!!!!!!!
+            mg = this.MG;
+            right = circshift(mg,[ 1,0]);
+            right(1,:) = 0;
+            left  = circshift(mg,[-1,0]);
+            left(end,:) = 0;
+            
+            MMM = right + left + circshift(mg,[0,1]) + circshift(mg,[0,-1]);
+            d = MMM & this.B;
+        end
+        function [] = updateProperties(this)
+            this.MG  = this.computeMargin();
+            this.num = this.computeNum();
+            this.DG  = this.computeDegradable();
         end
     end
     
     %--------------------------------------------------------------------%
-    methods(Static)
+    methods(Static) %get probability
         function p = getDiffuseProb(num)
             p = 0.1;    %¶Ã¼gªº
         end
         function p = getDegradeProb(num)
-            p = 0.05;   %¶Ã¼gªº
+            p = 0.5;   %¶Ã¼gªº
         end
         function p = getBindProb(n1, n2)
             p = 0.03;   %¶Ã¼gªº
