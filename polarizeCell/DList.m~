@@ -3,7 +3,7 @@ function listObject = DList()
   data = cell(0);
   listObject = struct('display',@display_list,'length',@listlength,'push_front',@add_firstelement,'add_firstelements',@add_firstelements,'push_back',@add_lasttelement,...
                         'add_lasttelements',@add_lasttelements,'add_element',@add_element,'add_elements',@add_elements,'set_element',@set_element,'delete_element',@delete_element,'pop_front',@delete_first,...
-                        'pop_back',@delete_last,'front',@GET_first,'back',@GET_last,'get',@GET,'insert',@insert,'pop',@pop);
+                        'pop_back',@delete_last,'front',@GET_first,'back',@GET_last,'get',@GET,'insert',@insert);
 
   function display_list
     %# Displays the data in the list
@@ -51,10 +51,10 @@ function listObject = DList()
   end
 
     function insert(datain, index)
-        if (index>numel(data)+1)
-            display('waring: insert excess DList length+1!')
+        if (index>numel(data))
+            display('waring: insert excess DList length!')
         end
-        data = [data(1:index-1); datain; data(index:end)];
+        data = [data(1:index-1) datain(:) data(index:end)];
     end
 
   function set_element(datain,index)
@@ -68,10 +68,6 @@ function listObject = DList()
         data(index) = [];
     end
   end
-
-    function pop(index)
-        data = [data(1:index-1); data(index+1:end)];
-    end
 
   function delete_first()
     %# Deletes fisrt element
@@ -104,5 +100,6 @@ function listObject = DList()
         b = p.getBlock();
 
     end
+
 
 end
