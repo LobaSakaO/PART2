@@ -5,19 +5,24 @@ classdef PopZ < handle
         MG; %margin
         DG; %degradable
         num;%total number of small popZ (sum(sum(B)))
+        Xlim;
+        Ylim;
     end
     
     properties (Constant)
-        Xlim = 50;
-        Ylim = 30;
+
     end
     
     %--------------------------------------------------------------------%
     methods(Access=public)
-        function obj = PopZ(b)
+        function obj = PopZ(b, x ,y)
             if nargin~=0
                 obj.B = b;
-                obj.updateProperties();
+                obj.Xlim = x;
+                obj.Ylim = y;
+                obj.updateMargin();
+                obj.updateNum();
+                obj.updateDegradable();
             end
         end
         
@@ -39,37 +44,12 @@ classdef PopZ < handle
         function n = getNum(this)
             n = this.num;
         end
-        
-        function collided = isCollide(this, collider)
-            collided = numel(find(this.MG & collider));
-        end
-        
-        function [] = degrade(this)
-            x = PopZCell.Xlim;
-            y = PopZCell.Ylim;
-            tmp_deg = binornd(1, PopZ.getDegradeProb(this.num), [x, y]);
-            degraded = tmp_deg & this.DG;
-            this.B = this.B - degraded;
-            this.updateProperties();
-        end
-        
-%         function [] = bind(this, binded)
-%             %binded is a PopZ that has intersection with MG
-%             this.B = this.B + binded.getBlock();
-%             this.updateProperties();
-%         end
-%         
-%         function [] = diffuse(this, vec)
-%             this.B = circshift(this.B, vec);
-%             this.updateProperties();
-%         end
-        
-        
+
     end
     
     %--------------------------------------------------------------------%
-    methods(Access=private) %helper functions
-        function M = computeMargin(this)
+    methods(Access=public)
+        function [] = updateMargin(this)
             
             right = circshift(this.B,[ 1,0]);
             right(1,:) = 0;
@@ -79,11 +59,14 @@ classdef PopZ < handle
             BBB = right + left + circshift(this.B,[0,1]) + circshift(this.B,[0,-1]);
             
             M = BBB & (this.B==0);
+            
+            this.MG = M;
         end
-        function n = computeNum(this)
+        function [] = updateNum(this)
             n = numel(find(this.B~=0));
+            this.num = n;
         end
-        function d = computeDegradable(this)
+        function [] = updateDegradable(this)
             %must compute margin first!!!!!!!!!
             mg = this.MG;
             right = circshift(mg,[ 1,0]);
@@ -93,22 +76,11 @@ classdef PopZ < handle
             
             MMM = right + left + circshift(mg,[0,1]) + circshift(mg,[0,-1]);
             d = MMM & this.B;
+            
+            this.DG = d;
         end
-        function [] = updateProperties(this)
-            this.MG  = this.computeMargin();
-            this.num = this.computeNum();
-            this.DG  = this.computeDegradable();
-        end
+        
     end
     
-    %--------------------------------------------------------------------%
-    methods(Static) %get probability
-        function p = getDiffuseProb(num)
-            p = 0.1;    %¶Ã¼gªº
-        end
-        function p = getDegradeProb(num)
-            p = 0.5;   %¶Ã¼gªº
-        end
 
-    end
 end
