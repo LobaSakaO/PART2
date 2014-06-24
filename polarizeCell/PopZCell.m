@@ -3,7 +3,7 @@ classdef PopZCell < handle
         PopZList;
         PopZ_All;%sum Big ParJ
         handle_graph;
-        para = ParaObj();
+        para;
         
         Xlim;
         Ylim;  
@@ -14,7 +14,7 @@ classdef PopZCell < handle
         function obj = PopZCell(xlim, ylim, paraObj, h)
             obj.Xlim = xlim;
             obj.Ylim = ylim;
-            obj.para = paraObj();
+            obj.para = paraObj;
             obj.handle_graph = h;
             obj.PopZList = DList();
             obj.PopZ_All = obj.computePopZ_All();
@@ -94,15 +94,15 @@ classdef PopZCell < handle
                 y = this.Ylim;
                 tmp_deg = binornd(1, this.para.getDegradeProb(hi.getNum()), [x, y]);
                 degraded = tmp_deg & hi.DG;
-                if (isempty(find(degraded))~=false)
+                if (isempty(find(degraded))==false)
                     hi.B = hi.getBlock() - degraded;
                     hi.updateMargin();
                     hi.updateNum();
-
                     if (isempty(find(hi.getBlock()))==true)
     %                     display('disappear!');
                         this.PopZList.pop(i);
                         i = i-1;
+
                     else
                         splitList = DList();
                         huntedBlock = hi.getBlock();
@@ -136,11 +136,11 @@ classdef PopZCell < handle
                 
                 hi = this.PopZList.get(i);
                 if(binornd(1, this.para.getDiffuseProb(hi.num))==true)
-                    if (hi.getNum()==1)
+                    if ((this.para.isRandomDiffuseUnitPopZ())&&(hi.getNum()==1))
                         v = find((this.PopZ_All==0));
                         j = randi([1,numel(v)]);
                         tmp = this.ZEROS();
-                        tmp(j) = 1;
+                        tmp(v(j)) = 1;
 
                         this.PopZ_All = this.PopZ_All - hi.getBlock();
                         hi.B = tmp;
